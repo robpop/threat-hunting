@@ -1,0 +1,28 @@
+// This query searches many Defender tables that contain a SHA256 value
+// Good to searching your environment for a malicious file signature
+let TargetHash = "<SHA256_HASH_HERE>";
+let Lookback = 30d;                         // define a lookback that is appropriate for your hunt
+union                                       // search all of these tables and return combined results
+    (DeviceEvents
+        | where Timestamp > ago(Lookback)
+        | where SHA256 == TargetHash or InitiatingProcessSHA256 == TargetHash),
+    (DeviceFileEvents
+        | where Timestamp > ago(Lookback)
+        | where SHA256 == TargetHash or InitiatingProcessSHA256 == TargetHash),
+    (DeviceNetworkEvents
+        | where Timestamp > ago(Lookback)
+        | where InitiatingProcessSHA256 == TargetHash),
+    (DeviceProcessEvents
+        | where Timestamp > ago(Lookback)
+        | where SHA256 == TargetHash or InitiatingProcessSHA256 == TargetHash),
+    (DeviceImageLoadEvents
+        | where Timestamp > ago(Lookback)
+        | where SHA256 == TargetHash)
+// the fields we are interested in - modify these as needed
+| project Timestamp, DeviceName, ActionType,
+          FileName, FolderPath, ProcessCommandLine,
+          InitiatingProcessFileName, InitiatingProcessCommandLine,
+          InitiatingProcessAccountName,
+          FileOriginUrl, FileOriginReferrerUrl,
+          RemoteUrl, RemoteIP, RemotePort
+| order by Timestamp asc                    // order with oldest event on top, which is likely when the file was introduced
