@@ -1,6 +1,6 @@
 // This query searches many Defender tables that contain a SHA256 value
 // Good to searching your environment for a malicious file signature
-let TargetHash = "<SHA256_HASH_HERE>";
+let TargetHash = "<SHA256_HASH_HERE>";      // sha256 hash of the suspicious/malicious file
 let Lookback = 30d;                         // define a lookback that is appropriate for your hunt
 union                                       // search all of these tables and return combined results
     (DeviceEvents
