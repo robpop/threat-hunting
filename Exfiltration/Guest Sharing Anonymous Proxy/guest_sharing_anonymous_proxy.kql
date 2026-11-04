@@ -1,0 +1,11 @@
+let targetUserId = "<USER UPN>";                    // UPN of the user to check
+CloudAppEvents
+| where TimeGenerated > ago(<LOOKBACK mm,d,M>)      // Lookback period
+| where ActionType == "AddedToSecureLink"
+| where IPTags contains "Anonymous proxy"
+| where RawEventData.TargetUserOrGroupType == "Guest"
+| extend TargetGuestUser = tostring(RawEventData.TargetUserOrGroupName)
+| extend TargetUserId = tostring(RawEventData.UserId)
+| extend TargetSiteUrl = tostring(RawEventData.SiteUrl)
+| where tolower(TargetUserId) contains tolower(targetUserId)
+| project Timestamp, TargetGuestUser, TargetUserId, TargetSiteUrl, IPAddress, AccountObjectId, AccountId, ApplicationId, Application, AccountDisplayName, DeviceType, OSPlatform, IsAnonymousProxy, ISP, UserAgent, ActivityObjects, IPTags, RawEventData, UncommonForUser, LastSeenForUser, ReportId
