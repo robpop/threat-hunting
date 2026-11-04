@@ -1,0 +1,6 @@
+let targetUserId = "<USER UPN>";                     // UPN of the user to check
+CloudAppEvents
+| where TimeGenerated > ago(<LOOKBACK m,h,d>)        // Lookback period
+| where tostring(RawEventData.UserId) contains targetUserId
+| summarize FirstSeen_EST = format_datetime(min(TimeGenerated) - 5h, 'hh:mm:ss tt MM/dd'), LastSeen_EST = format_datetime(max(TimeGenerated) - 5h, 'hh:mm:ss tt MM/dd'), ActionCount = count(), Actions = make_set(ActionType), Apps = make_set(Application), Objects = make_set(ObjectName) by IPAddress, CountryCode, City, ISP
+| sort by IPAddress desc
