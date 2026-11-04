@@ -25,8 +25,8 @@ After compromising a mailbox, attackers often create inbox rules to stay hidden 
 
 | Parameter | Default | Description |
 | --- | --- | --- |
-| `targetUserId` | `user@contoso.com` | UPN of the compromised or suspected user |
-| `lookback` | `7d` | How far back to search. Set this to cover the full suspected compromise window, up to the 30-day Advanced Hunting retention limit. |
+| `targetUserId` | `<USER UPN>` | UPN of the compromised or suspected user |
+| `lookback` | `<LOOKBACK mm,d,M>` | How far back to search. Set this to cover the full suspected compromise window, up to the 30-day Advanced Hunting retention limit. |
 
 ## Reviewing results
 
