@@ -1,0 +1,21 @@
+let targetUser = "<USER UPN>";                       // UPN of the user to check
+union isfuzzy=true
+    (UrlClickEvents
+    | where AccountUpn =~ targetUser
+    | where Timestamp > ago(<LOOKBACK m,h,d>)        // Lookback period
+    | project Timestamp, User = AccountUpn, Url = Url, Source = "Email or Teams (Safe Links)", Status = ActionType, DeviceName = "N/A", RemoteIP = IPAddress),
+    (DeviceNetworkEvents
+    | where InitiatingProcessAccountUpn =~ targetUser or InitiatingProcessAccountName =~ tostring(split(targetUser, "@")[0])
+    | where Timestamp > ago(<LOOKBACK m,h,d>)        // Lookback period
+    | where isnotempty(RemoteUrl)
+    | project Timestamp, User = InitiatingProcessAccountUpn, Url = RemoteUrl, Source = strcat("Endpoint Network: ", InitiatingProcessFileName), Status = ActionType, DeviceName = DeviceName, RemoteIP = RemoteIP),
+    (DeviceEvents
+    | where InitiatingProcessAccountUpn =~ targetUser or InitiatingProcessAccountName =~ tostring(split(targetUser, "@")[0])
+    | where Timestamp > ago(<LOOKBACK m,h,d>)        // Lookback period
+    | where ActionType in ("BrowserLaunchedToOpenUrl", "SmartScreenUrlWarning")
+    | extend ParsedUrl = tostring(parse_json(AdditionalFields).Url)
+    | project Timestamp, User = InitiatingProcessAccountUpn, Url = coalesce(RemoteUrl, ParsedUrl), Source = strcat("Endpoint Action: ", ActionType), Status = ActionType, DeviceName = DeviceName, RemoteIP = ""
+    | where isnotempty(Url))
+| project Timestamp, User, Source, Url, Status, DeviceName, RemoteIP
+| where Status !~ "ConnectionFailed"
+| sort by Timestamp desc
