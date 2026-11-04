@@ -1,0 +1,10 @@
+let targetUserId = "<USER UPN>";        // UPN of the user to check
+let lookback = <LOOKBACK mm,d,M>;       // Lookback period
+CloudAppEvents
+| where Timestamp > ago(lookback)
+| where ActionType in ("New-InboxRule", "Set-InboxRule")
+| where tostring(RawEventData.UserId) =~ targetUserId
+| project Timestamp,
+          DateOccurred = format_datetime(Timestamp, 'MM/dd/yyyy hh:mm tt'),
+          RawEventData
+| order by Timestamp desc
