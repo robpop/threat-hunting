@@ -1,0 +1,25 @@
+let targetUserId = "<USER UPN>";
+let mfaChanges = AuditLogs
+    | where TimeGenerated > <LOOKBACK mm,d,M>
+    | mv-expand TargetResources
+    | extend TargetUser = tolower(tostring(TargetResources.userPrincipalName))
+    | where TargetUser contains targetUserId
+    | extend ModifiedProperties = tostring(TargetResources.modifiedProperties)
+    | where ModifiedProperties contains "StrongAuthentication" 
+        or OperationName contains "registered security info"
+    | project AuditTime = TimeGenerated, OperationName, ResultReason, TargetUser, ModifiedProperties;
+let allSignins = union isfuzzy=true SigninLogs, AADNonInteractiveUserSignInLogs
+    | where TimeGenerated > <LOOKBACK mm,d,M>
+    | where ResultType == "0"
+    | extend JoinUser = tolower(UserPrincipalName)
+    | project SigninTime = TimeGenerated, JoinUser, ProbableIPAddress = IPAddress, AppDisplayName, Location, SignInCategory = Category;
+mfaChanges
+| join kind=inner (allSignins) on $left.TargetUser == $right.JoinUser
+| where SigninTime <= AuditTime
+| summarize arg_max(SigninTime, *) by AuditTime, TargetUser, OperationName
+| project 
+    DateOccurred = format_datetime(AuditTime, 'MM/dd/yyyy hh:mm tt'),
+    TargetUser,
+    ProbableIPAddress,
+    ModifiedProperties
+| sort by DateOccurred desc
