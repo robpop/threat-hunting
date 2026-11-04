@@ -29,7 +29,7 @@ After compromising an account, attackers often connect through anonymizing proxi
 | Parameter | Placeholder | Description |
 | --- | --- | --- |
 | `targetUserId` | `<USER UPN>` | UPN of the compromised or suspected user. Matched with `contains`. |
-| Lookback | `<LOOKBACK mm,d,M>` | Value inside `ago()`. How far back to search, such as `30m` or `7d`. |
+| Lookback | `<LOOKBACK m,h,d>` | Value inside `ago()`. How far back to search, such as `30m` or `7d`. |
 
 ## Output
 
