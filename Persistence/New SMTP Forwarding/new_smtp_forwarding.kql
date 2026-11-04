@@ -1,0 +1,9 @@
+let targetUserId = "<USER UPN>";                     // UPN of the user to check
+CloudAppEvents
+| where ActionType == "Set-Mailbox"
+| where TimeGenerated > ago(<LOOKBACK m,h,d>)       // Lookback period
+| where RawEventData.UserId contains targetUserId
+| extend rawParameters = RawEventData.Parameters
+| mv-expand rawParameters
+| where rawParameters.Name == "ForwardingSmtpAddress" and isnotempty(rawParameters.Value)
+| project DateOccurred = format_datetime(TimeGenerated, 'MM/dd/yyyy hh:mm tt'), RawEventData
