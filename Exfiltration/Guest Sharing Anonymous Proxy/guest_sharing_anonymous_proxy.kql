@@ -1,6 +1,6 @@
 let targetUserId = "<USER UPN>";                    // UPN of the user to check
 CloudAppEvents
-| where TimeGenerated > ago(<LOOKBACK mm,d,M>)      // Lookback period
+| where TimeGenerated > ago(<LOOKBACK m,h,d>)      // Lookback period
 | where ActionType == "AddedToSecureLink"
 | where IPTags contains "Anonymous proxy"
 | where RawEventData.TargetUserOrGroupType == "Guest"
